@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	//New will return a *Bebop, which is a struct containing things to control the drone like ports to use, ip address, networkFrameGenerator(), and so on
 	bebop := client.New()
 
 	if err := bebop.Connect(); err != nil {
