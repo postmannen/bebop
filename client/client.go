@@ -27,12 +27,14 @@ type tmpFrame struct {
 	frameFlags    int
 }
 
+//ARStreamACK ARSTreamACK
 type ARStreamACK struct {
 	FrameNumber    int
 	HighPacketsAck uint64
 	LowPacketsAck  uint64
 }
 
+//ARStreamFrame ARStreamFrame
 type ARStreamFrame struct {
 	FrameNumber       int
 	FrameFlags        int
@@ -41,6 +43,7 @@ type ARStreamFrame struct {
 	Frame             []byte
 }
 
+//NewARStreamFrame NewARStreamFrame
 func NewARStreamFrame(buf []byte) ARStreamFrame {
 	//
 	// ARSTREAM_NetworkHeaders_DataHeader_t;
@@ -82,18 +85,20 @@ func NewARStreamFrame(buf []byte) ARStreamFrame {
 	return frame
 }
 
+//NetworkFrame NetworkFrame
 type NetworkFrame struct {
 	Type int
 	Seq  int
-	Id   int
+	ID   int
 	Size int
 	Data []byte
 }
 
+//NewNetworkFrame NewNetworkFrame
 func NewNetworkFrame(buf []byte) NetworkFrame {
 	frame := NetworkFrame{
 		Type: int(buf[0]),
-		Id:   int(buf[1]),
+		ID:   int(buf[1]),
 		Seq:  int(buf[2]),
 		Data: []byte{},
 	}
@@ -155,6 +160,7 @@ func networkFrameGenerator() func(*bytes.Buffer, byte, byte) *bytes.Buffer {
 	}
 }
 
+//Pcmd Pcmd
 type Pcmd struct {
 	Flag  int
 	Roll  int
@@ -164,6 +170,7 @@ type Pcmd struct {
 	Psi   float32
 }
 
+//Bebop Bebop
 type Bebop struct {
 	IP                    string
 	NavData               map[string]string
@@ -213,6 +220,7 @@ func (b *Bebop) write(buf []byte) (int, error) {
 	return 0, nil
 }
 
+//Discover Discover
 func (b *Bebop) Discover() error {
 	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", b.IP, b.DiscoveryPort))
 
@@ -255,6 +263,7 @@ func (b *Bebop) Discover() error {
 	return b.discoveryClient.Close()
 }
 
+//Connect Connect
 func (b *Bebop) Connect() error {
 	err := b.Discover()
 
@@ -335,6 +344,7 @@ func (b *Bebop) Connect() error {
 	return nil
 }
 
+//FlatTrim do
 func (b *Bebop) FlatTrim() error {
 	//
 	// ARCOMMANDS_Generator_GenerateARDrone3PilotingFlatTrim
@@ -357,6 +367,7 @@ func (b *Bebop) FlatTrim() error {
 	return err
 }
 
+//GenerateAllStates do
 func (b *Bebop) GenerateAllStates() error {
 	//
 	// ARCOMMANDS_Generator_GenerateCommonCommonAllStates
@@ -379,6 +390,7 @@ func (b *Bebop) GenerateAllStates() error {
 	return err
 }
 
+//TakeOff do
 func (b *Bebop) TakeOff() error {
 	//
 	//  ARCOMMANDS_Generator_GenerateARDrone3PilotingTakeOff
@@ -401,6 +413,7 @@ func (b *Bebop) TakeOff() error {
 	return err
 }
 
+//Land do
 func (b *Bebop) Land() error {
 	//
 	// ARCOMMANDS_Generator_GenerateARDrone3PilotingLanding
@@ -423,54 +436,63 @@ func (b *Bebop) Land() error {
 	return err
 }
 
+//Up do
 func (b *Bebop) Up(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Gaz = validatePitch(val)
 	return nil
 }
 
+//Down do
 func (b *Bebop) Down(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Gaz = validatePitch(val) * -1
 	return nil
 }
 
+//Forward do
 func (b *Bebop) Forward(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Pitch = validatePitch(val)
 	return nil
 }
 
+//Backward do
 func (b *Bebop) Backward(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Pitch = validatePitch(val) * -1
 	return nil
 }
 
+//Right do
 func (b *Bebop) Right(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Roll = validatePitch(val)
 	return nil
 }
 
+//Left do
 func (b *Bebop) Left(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Roll = validatePitch(val) * -1
 	return nil
 }
 
+//Clockwise do
 func (b *Bebop) Clockwise(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Yaw = validatePitch(val)
 	return nil
 }
 
+//CounterClockwise do
 func (b *Bebop) CounterClockwise(val int) error {
 	b.Pcmd.Flag = 1
 	b.Pcmd.Yaw = validatePitch(val) * -1
 	return nil
 }
 
+//Stop do
 func (b *Bebop) Stop() error {
 	b.Pcmd = Pcmd{
 		Flag:  0,
@@ -567,7 +589,7 @@ func (b *Bebop) createAck(frame NetworkFrame) *bytes.Buffer {
 
 	return b.networkFrameGenerator(bytes.NewBuffer([]byte{uint8(frame.Seq)}),
 		ARNETWORKAL_FRAME_TYPE_ACK,
-		byte(uint16(frame.Id)+(ARNETWORKAL_MANAGER_DEFAULT_ID_MAX/2)),
+		byte(uint16(frame.ID)+(ARNETWORKAL_MANAGER_DEFAULT_ID_MAX/2)),
 	)
 }
 
@@ -581,7 +603,7 @@ func (b *Bebop) createPong(frame NetworkFrame) *bytes.Buffer {
 func (b *Bebop) packetReceiver(buf []byte) {
 	frame := NewNetworkFrame(buf)
 
-	// ==========================================
+	// =================TESTING=========================
 	if frame.Type == int(ARCOMMANDS_ID_ARDRONE3_PILOTINGSTATE_CMD_POSITIONCHANGED) {
 		//fmt.Println("FRAME EVENT Type:", frame.Type,
 		//      "Id:", frame.Id, "size:", frame.Size, "data:", frame.Data)
@@ -629,7 +651,7 @@ func (b *Bebop) packetReceiver(buf []byte) {
 		}
 
 	}
-	// ==========================================
+	// =================================================
 
 	//
 	// libARNetwork/Sources/ARNETWORK_Receiver.c#ARNETWORK_Receiver_ThreadRun
@@ -644,7 +666,7 @@ func (b *Bebop) packetReceiver(buf []byte) {
 	}
 
 	if frame.Type == int(ARNETWORKAL_FRAME_TYPE_DATA_LOW_LATENCY) &&
-		frame.Id == int(BD_NET_DC_VIDEO_DATA_ID) {
+		frame.ID == int(BD_NET_DC_VIDEO_DATA_ID) {
 
 		arstreamFrame := NewARStreamFrame(frame.Data)
 
@@ -658,7 +680,7 @@ func (b *Bebop) packetReceiver(buf []byte) {
 	//
 	// libARNetwork/Sources/ARNETWORK_Receiver.c#ARNETWORK_Receiver_ThreadRun
 	//
-	if frame.Id == int(ARNETWORK_MANAGER_INTERNAL_BUFFER_ID_PING) {
+	if frame.ID == int(ARNETWORK_MANAGER_INTERNAL_BUFFER_ID_PING) {
 		pong := b.createPong(frame).Bytes()
 		_, err := b.write(pong)
 		if err != nil {
@@ -667,6 +689,7 @@ func (b *Bebop) packetReceiver(buf []byte) {
 	}
 }
 
+//StartRecording do
 func (b *Bebop) StartRecording() error {
 	buf := b.videoRecord(ARCOMMANDS_ARDRONE3_MEDIARECORD_VIDEO_RECORD_START)
 
@@ -677,6 +700,7 @@ func (b *Bebop) StartRecording() error {
 	return nil
 }
 
+//StopRecording do
 func (b *Bebop) StopRecording() error {
 	buf := b.videoRecord(ARCOMMANDS_ARDRONE3_MEDIARECORD_VIDEO_RECORD_STOP)
 
@@ -717,10 +741,12 @@ func (b *Bebop) videoRecord(state byte) *bytes.Buffer {
 	return cmd
 }
 
+//Video do
 func (b *Bebop) Video() chan []byte {
 	return b.video
 }
 
+//HullProtection do
 func (b *Bebop) HullProtection(protect bool) error {
 	//
 	// ARCOMMANDS_Generator_GenerateARDrone3SpeedSettingsHullProtection
@@ -749,6 +775,7 @@ func (b *Bebop) HullProtection(protect bool) error {
 	return err
 }
 
+//Outdoor do
 func (b *Bebop) Outdoor(outdoor bool) error {
 	//
 	// ARCOMMANDS_Generator_GenerateARDrone3SpeedSettingsOutdoor
@@ -781,6 +808,7 @@ func (b *Bebop) Outdoor(outdoor bool) error {
 	return err
 }
 
+//VideoEnable do
 func (b *Bebop) VideoEnable(enable bool) error {
 	cmd := &bytes.Buffer{}
 
@@ -809,6 +837,7 @@ func (b *Bebop) VideoEnable(enable bool) error {
 	return err
 }
 
+//VideoStreamMode do
 func (b *Bebop) VideoStreamMode(mode int8) error {
 	cmd := &bytes.Buffer{}
 
